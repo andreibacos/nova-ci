@@ -301,13 +301,21 @@ if ($branchName -eq 'master') {
     pip install amqp==2.1.3
 }
 
+if ($branchName -eq 'stable/ocata' -or $branchName -eq 'stable/newton') {
+    $glance_url = "http://{0}:9292" -f $devstackIP
+    $identity_url = "http://{0}:35357" -f $devstackIP
+} else {
+    $glance_url = "http://{0}/image" -f $devstackIP
+    $identity_url = "http://{0}/identity" -f $devstackIP
+}
+
 # Note: be careful as WMI queries may return only one element, in which case we
 # won't get an array. To make it easier, we can just make sure we always have an
 # array.
 $cpu_array = ([array](gwmi -class Win32_Processor))
 $cores_count = $cpu_array.count * $cpu_array[0].NumberOfCores
-$novaConfig = (gc "$templateDir\nova.conf").replace('[DEVSTACK_IP]', "$devstackIP").Replace('[LOGDIR]', "$openstackLogs").Replace('[RABBITUSER]', $rabbitUser)
-$neutronConfig = (gc "$templateDir\neutron_hyperv_agent.conf").replace('[DEVSTACK_IP]', "$devstackIP").Replace('[LOGDIR]', "$openstackLogs").Replace('[RABBITUSER]', $rabbitUser).replace('[CORES_COUNT]', "$cores_count")
+$novaConfig = (gc "$templateDir\nova.conf").replace('[DEVSTACK_IP]', "$devstackIP").Replace('[LOGDIR]', "$openstackLogs").Replace('[RABBITUSER]', $rabbitUser).replace('[GLANCEAPI]', $glance_url).replace('[IDENTITY_URL]', $identity_url)
+$neutronConfig = (gc "$templateDir\neutron_hyperv_agent.conf").replace('[DEVSTACK_IP]', "$devstackIP").Replace('[LOGDIR]', "$openstackLogs").Replace('[RABBITUSER]', $rabbitUser).replace('[CORES_COUNT]', "$cores_count").replace('[IDENTITY_URL]', $identity_url)
 
 Set-Content $configDir\nova.conf $novaConfig
 if ($? -eq $false){

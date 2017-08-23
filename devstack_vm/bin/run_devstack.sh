@@ -1,7 +1,6 @@
 #!/bin/bash
 
-hyperv01=$1
-patch=$2
+branch=$1
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 . $DIR/config.sh
@@ -44,8 +43,19 @@ sudo rm -rf "$PBR_LOC"
 
 MYIP=$(/sbin/ifconfig eth0 2>/dev/null| grep "inet addr:" 2>/dev/null| sed 's/.*inet addr://g;s/ .*//g' 2>/dev/null)
 
+if [[ $branch == "stable/newton" ]] || [[ $branch == "stable/ocata" ]];then
+    # disable swift services
+    sed -i 's/enable_service s/disable_service s-/g' "$LOCALCONF"
+    sed -i 's/^SWIFT_/#SWIFT_/g' "$LOCALCONF"
+    identity_api="http://$MYIP:35357/v3"
+else
+    identity_api="http://$MYIP/identity"
+fi
+
+
 if [ -e "$LOCALCONF" ]
 then
+        sed -i 's/IDENTITY_API_URL/'$identity_api'/g' "$LOCALCONF"
     	[ -z "$MYIP" ] && exit 1
         sed -i 's/^HOST_IP=.*/HOST_IP='$MYIP'/g' "$LOCALCONF"
 fi

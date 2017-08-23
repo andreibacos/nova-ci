@@ -165,7 +165,13 @@ fi
 
 set -e
 
-run_ssh_cmd_with_retry ubuntu@$DEVSTACK_IP $DEVSTACK_SSH_KEY "sed -i 's/export OS_AUTH_URL.*/export OS_AUTH_URL=http:\/\/127.0.0.1\/identity/g' /home/ubuntu/keystonerc" 3
+if [[ $ZUUL_BRANCH == "stable/newton" ]] || [[ $ZUUL_BRANCH == "stable/ocata" ]];then
+    identity_api="http:\/\/127.0.0.1:5000\/v2.0"
+else
+    identity_api="http:\/\/127.0.0.1\/identity"
+fi
+
+run_ssh_cmd_with_retry ubuntu@$DEVSTACK_IP $DEVSTACK_SSH_KEY "sed -i 's/export OS_AUTH_URL.*/export OS_AUTH_URL=$identity_api/g' /home/ubuntu/keystonerc" 3
 
 # update repos
 run_ssh_cmd_with_retry ubuntu@$DEVSTACK_IP $DEVSTACK_SSH_KEY "/home/ubuntu/bin/update_devstack_repos.sh --branch $ZUUL_BRANCH --build-for $ZUUL_PROJECT" 1
