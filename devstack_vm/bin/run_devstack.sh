@@ -45,11 +45,11 @@ MYIP=$(/sbin/ifconfig eth0 2>/dev/null| grep "inet addr:" 2>/dev/null| sed 's/.*
 
 if [[ $branch == "stable/newton" ]] || [[ $branch == "stable/ocata" ]];then
     # disable swift services
-    sed -i 's/enable_service s/disable_service s-/g' "$LOCALCONF"
+    sed -i 's/enable_service s-/disable_service s-/g' "$LOCALCONF"
     sed -i 's/^SWIFT_/#SWIFT_/g' "$LOCALCONF"
-    identity_api="http://$MYIP:35357/v3"
+    identity_api="http:\/\/$MYIP:35357\/v3"
 else
-    identity_api="http://$MYIP/identity"
+    identity_api="http:\/\/$MYIP\/identity"
 fi
 
 
