@@ -44,9 +44,8 @@ sudo rm -rf "$PBR_LOC"
 MYIP=$(/sbin/ifconfig eth0 2>/dev/null| grep "inet addr:" 2>/dev/null| sed 's/.*inet addr://g;s/ .*//g' 2>/dev/null)
 
 if [[ $branch == "stable/newton" ]] || [[ $branch == "stable/ocata" ]];then
-    # disable swift services
-    sed -i 's/enable_service s-/disable_service s-/g' "$LOCALCONF"
-    sed -i 's/^SWIFT_/#SWIFT_/g' "$LOCALCONF"
+    # fix sqlalchemy issue, 2 versions are installed, constraints does not correcty remove it, stable does not work with latest version
+    sudo pip uninstall sqlalchemy
     identity_api="http:\/\/$MYIP:35357\/v3"
 else
     identity_api="http:\/\/$MYIP\/identity"
